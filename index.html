@@ -11,6 +11,7 @@ h1{font-size:20px;margin:8px 0 12px}
 #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
 #grid button{border:2px solid transparent;border-radius:8px;padding:8px 2px;font-size:14px;cursor:pointer;line-height:1.3}
 #grid button small{display:block;font-size:10px;opacity:.8}
+#grid.gm button small{display:none}
 #grid button.on{border-color:var(--fg)}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:14px 0}
 select,.act,input{font:inherit;padding:8px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
@@ -27,12 +28,14 @@ canvas{display:block;margin:0 auto;max-width:100%;max-height:70vh;border:1px sol
 <label>向き <select id="ori"><option value="p">縦</option><option value="l">横</option></select></label>
 </div>
 <div class="row"><label>罫線 <select id="dir"><option value="h">横罫</option><option value="v">縦罫</option><option value="g">方眼</option></select></label><label>方眼の幅 <input id="gw" type="number" value="5" step="0.5" min="1" style="width:64px"> mm</label><label>線 <select id="lstyle"><option value="n">普通罫線</option><option value="d">ドット罫線</option><option value="t">点線</option></select></label><label>太さ <input id="lw" type="number" value="0.2" step="0.05" min="0.05" style="width:64px"> mm</label><label>ドット間隔 <input id="dg" type="number" value="6" min="1" style="width:56px"> mm</label></div>
+<div id="cust" class="row"><label>色 <input id="cc" type="color" value="#888888"></label><label>幅 <input id="cw" type="number" value="9" step="0.1" min="0.5" style="width:72px"> mm</label><label>記号 <input id="cs" size="4" value="X"></label></div>
+<div id="cover" class="row"><label>1行目のラベル <input id="cl1" size="10" placeholder="（空欄）"></label><label>2行目のラベル <input id="cl2" size="10" value="名前"></label></div>
 <div id="inner"><div class="row"><label>中央 <input id="tc" size="14" value="No. ________"></label><label>右 <input id="tr" size="22" value="日付 ______年 ____月 ____日"></label></div>
 <div class="row"><label>上余白 <input id="mtop" type="number" value="14" min="0" style="width:64px"> mm</label><label>下余白 <input id="mbot" type="number" value="12" min="0" style="width:64px"> mm</label><label>行数 <input id="nr" type="number" min="1" placeholder="自動" style="width:72px"></label></div>
 <p id="calc"></p>
 <details><summary>全サイズの行数表</summary><div id="tbl"></div></details></div>
 <canvas id="cv"></canvas>
-<div class="row"><button class="act" id="one">このサイズをPDFで保存</button><button class="act" id="all">全25種を1つのPDFで保存</button></div>
+<div class="row"><button class="act" id="one">このサイズをPDFで保存</button><button class="act" id="all">全種類を1つのPDFで保存</button></div>
 <p id="msg"></p>
 <script>
 const F="'Hiragino Sans','Yu Gothic','Noto Sans JP',sans-serif";
@@ -42,9 +45,10 @@ const hexToRgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const mix=(a,b,t)=>{const A=hexToRgb(a),B=hexToRgb(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};
 const lum=h=>{const [r,g,b]=hexToRgb(h);return(0.299*r+0.587*g+0.114*b)/255};
 // [入力用, 手書き, mm表記, mm値, 色, 段, 市販]
-const G=[['e','ε',['3','3 1/6','3 1/3'],[3,19/6,10/3],'#f0a04b'],
-['d','d',['3 1/2','3 3/4','4'],[3.5,3.75,4],'#5fbf6a'],
-['D','D',['4 1/3','4 2/3'],[13/3,14/3],'#b5d94a'],
+const G=[['f','f',['1','1 1/3','1 2/3'],[1,4/3,5/3],'#2aa7a0'],
+['e','e',['2','2 1/3','2 2/3'],[2,7/3,8/3],'#f0a04b'],
+['d','d',['3','3 1/3','3 2/3'],[3,10/3,11/3],'#5fbf6a'],
+['D','D',['4','4 1/3','4 2/3'],[4,13/3,14/3],'#b5d94a'],
 ['C','C',['5','5 1/2'],[5,5.5],'#7ec8ee',1],
 ['B','B',['6','6 1/2'],[6,6.5],'#4a7fd4',1],
 ['A','A',['7','7 1/2'],[7,7.5],'#e0504a',1]];
@@ -72,10 +76,13 @@ function render(r,p,c,s){if($('kind').value==='i')return renderInner(r,p,c,s);
   x.fillStyle=mix(r.hex,'#ffffff',0.78);x.strokeStyle=fg;x.lineWidth=0.4*s;
   x.fillRect(bx,by,bw,bh);x.strokeRect(bx,by,bw,bh);x.beginPath();x.moveTo(bx,by+bh/2);x.lineTo(bx+bw,by+bh/2);x.stroke();
     x.fillStyle='#222';x.font=`${3.2*s}px ${F}`;x.textBaseline='top';x.textAlign='left';
-  x.fillText('名前',bx+2*s,by+bh/2+1.5*s);
-  x.fillStyle=fg;x.textBaseline='alphabetic';x.font=`bold ${20*s}px ${F}`;x.fillText(r.hw,L,H-12*s);
-  x.textAlign='right';x.font=`${6*s}px ${F}`;x.fillText(r.mmT+' mm',R,H-12*s);
+  x.fillText($('cl1').value,bx+2*s,by+1.5*s);x.fillText($('cl2').value,bx+2*s,by+bh/2+1.5*s);
+  x.fillStyle=fg;x.textBaseline='alphabetic';x.font=`bold ${20*s}px ${F}`;if(dir==='g')symS(x,20*s,L,H-12*s,'left',true);else x.fillText(r.hw,L,H-12*s);
+  if(dir!=='g'){x.textAlign='right';x.font=`${6*s}px ${F}`;x.fillText(r.mmT+' mm',R,H-12*s)}
 }
+function symS(x,fs,px,py,align,bold){const sub=String(num('gw',5)),b=bold?'bold ':'';
+  x.font=`${b}${fs}px ${F}`;const w1=x.measureText('S').width;x.font=`${b}${fs*0.6}px ${F}`;const t=w1+x.measureText(sub).width,sx=align==='right'?px-t:px;
+  x.textAlign='left';x.font=`${b}${fs}px ${F}`;x.fillText('S',sx,py);x.font=`${b}${fs*0.6}px ${F}`;x.fillText(sub,sx+w1,py+fs*0.25);x.font=`${b}${fs}px ${F}`}
 const pp=()=>{const p=PAPERS[$('paper').value];return $('ori').value==='l'?[p[0],p[2],p[1]]:p};
 const num=(id,d)=>{const v=parseFloat(document.getElementById(id).value);return isFinite(v)&&v>=0?v:d};
 function renderInner(r,p,c,s){
@@ -102,7 +109,7 @@ function renderInner(r,p,c,s){
   }
   x.setLineDash([]);
   x.fillStyle=tcol;x.font=`${3.5*s}px ${F}`;x.textBaseline='alphabetic';
-  x.textAlign='left';x.fillText(dir==='g'?'\u65b9\u773c '+num('gw',5)+'mm':r.hw+'  '+r.mmT+'mm',L,ty);
+  if(dir==='g')symS(x,3.5*s,L,ty,'left',false);else{x.textAlign='left';x.fillText(r.hw+'  '+r.mmT+'mm',L,ty)}
   x.textAlign='center';x.fillText($('tc').value,W/2,ty);
   x.textAlign='right';x.fillText($('tr').value,R,ty);
 }
@@ -127,16 +134,18 @@ function pdf(jpgs,wmm,hmm){
 const $=id=>document.getElementById(id),cv=$('cv'),msg=$('msg');
 let cur=rows.find(r=>r.key==='UW');
 PAPERS.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p[0];$('paper').append(o)});$('paper').value=5;
+rows.push({key:'custom',hw:'X',mmT:'9',mm:9,hex:'#888888',mk:false,custom:true});
 rows.forEach(r=>{const b=document.createElement('button');b.style.background=r.hex;b.style.color=lum(r.hex)<0.5?'#fff':'#222';
-  b.innerHTML=`${r.hw}<small>${r.mmT}mm</small>`;b.onclick=()=>{cur=r;autoMargin();draw()};r.btn=b;$('grid').append(b)});
+  b.innerHTML=r.custom?'カスタム':`${r.hw}<small>${r.mmT}mm</small>`;b.onclick=()=>{cur=r;autoMargin();draw()};r.btn=b;$('grid').append(b)});
 function autoMargin(){$('mtop').value=5;$('mbot').value=5;$('nr').value=''}
 function calc(){const p=pp(),H=p[2],mt=num('mtop',14),mb=num('mbot',12);
   if($('dir').value!=='h'){const gp=$('dir').value==='g'?num('gw',5):cur.mm,nc=Math.floor((p[1]-20)/gp+1e-6),nrr=Math.floor((H-mt-mb-7)/gp+1e-6);$('calc').textContent=$('dir').value==='v'?`${cur.hw}\uff08${cur.mmT}mm\uff09: ${nc}\u5217\uff08\u7dda${nc+1}\u672c\uff09`:`\u65b9\u773c ${gp}mm: \u6a2a${nc}\u30de\u30b9\u00d7\u7e26${nrr}\u30de\u30b9`;$('tbl').innerHTML='';return}
   const f=(m,q)=>{const n=q>0?q:Math.floor((H-mt-mb-7)/m+1e-6),sl=(H-mt-mb)-n*m-7;return[n,+(mt+sl/2).toFixed(1),+(mb+sl/2).toFixed(1)]};
   const[n,ru,rd]=f(cur.mm,parseInt($('nr').value));$('calc').textContent=`${cur.hw}（${cur.mmT}mm）: ${n}行（線${n+1}本）／上の余白 ${ru}mm・下の余白 ${rd}mm`;
   $('tbl').innerHTML='<table>'+rows.map(r=>{const[k,m1,m2]=f(r.mm);return`<tr><td>${r.hw}</td><td>${r.mmT}mm</td><td>${k}行</td><td>上${m1}・下${m2}mm</td></tr>`}).join('')+'</table>'}
-function draw(){rows.forEach(r=>r.btn.classList.toggle('on',r===cur));const inn=$('kind').value==='i';$('inner').style.display=inn?'':'none';render(cur,pp(),cv,5);if(inn)calc()}
-$('paper').onchange=()=>{autoMargin();draw()};$('ori').onchange=draw;$('kind').onchange=draw;['tc','tr','mtop','mbot','nr','lw','dg','lstyle','dir','gw'].forEach(i=>$(i).oninput=draw);autoMargin();draw();
+function syncCustom(){const w=parseFloat($('cw').value),c=rows[rows.length-1];c.mm=isFinite(w)&&w>0?w:9;c.mmT=String(+c.mm.toFixed(2));c.hex=$('cc').value;c.hw=$('cs').value||'X';c.btn.style.background=c.hex;c.btn.style.color=lum(c.hex)<0.5?'#fff':'#222'}
+function draw(){syncCustom();$('cust').style.display=cur.custom?'':'none';$('grid').classList.toggle('gm',$('dir').value==='g');rows.forEach(r=>r.btn.classList.toggle('on',r===cur));const inn=$('kind').value==='i';$('inner').style.display=inn?'':'none';$('cover').style.display=inn?'none':'';render(cur,pp(),cv,5);if(inn)calc()}
+$('paper').onchange=()=>{autoMargin();draw()};$('ori').onchange=draw;$('kind').onchange=draw;['cc','cw','cs','cl1','cl2','tc','tr','mtop','mbot','nr','lw','dg','lstyle','dir','gw'].forEach(i=>$(i).oninput=draw);autoMargin();draw();
 async function toJpg(r,p){const c=document.createElement('canvas');render(r,p,c,6);
   const b=await new Promise(res=>c.toBlob(res,'image/jpeg',0.92));return{b:new Uint8Array(await b.arrayBuffer()),w:c.width,h:c.height}}
 async function save(list,name){
