@@ -16,6 +16,9 @@ h1{font-size:20px;margin:8px 0 12px}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:14px 0}
 select,.act,input{font:inherit;padding:8px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
 .act{cursor:pointer;font-weight:600}
+#stage{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;justify-items:center}
+#stage canvas{grid-column:2;grid-row:3}#mt{grid-column:2;grid-row:1}#mtx{grid-column:2;grid-row:2;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}#ml{grid-column:1;grid-row:3}#mr{grid-column:3;grid-row:3}#mb{grid-column:2;grid-row:4}
+.mi label{display:flex;flex-direction:column;align-items:center;font-size:12px;gap:2px}
 canvas{display:block;margin:0 auto;max-width:100%;max-height:70vh;border:1px solid var(--bd);box-shadow:0 2px 10px #0003}
 #msg{min-height:1.4em;font-size:13px}
 #tbl table{font-size:12px;border-collapse:collapse}#tbl td{padding:2px 10px;border-bottom:1px solid var(--bd)}
@@ -27,25 +30,44 @@ canvas{display:block;margin:0 auto;max-width:100%;max-height:70vh;border:1px sol
 <label>用紙 <select id="paper"></select></label>
 <label>向き <select id="ori"><option value="p">縦</option><option value="l">横</option></select></label>
 </div>
-<div class="row"><label>罫線 <select id="dir"><option value="h">横罫</option><option value="v">縦罫</option><option value="g">方眼</option></select></label><label>方眼の幅 <input id="gw" type="number" value="5" step="0.5" min="1" style="width:64px"> mm</label><label>線 <select id="lstyle"><option value="n">普通罫線</option><option value="d">ドット罫線</option><option value="t">点線</option></select></label><label>太さ <input id="lw" type="number" value="0.2" step="0.05" min="0.05" style="width:64px"> mm</label><label>ドット間隔 <input id="dg" type="number" value="6" min="1" style="width:56px"> mm</label></div>
-<div id="cust" class="row"><label>色 <input id="cc" type="color" value="#888888"></label><label>幅 <input id="cw" type="number" value="9" step="0.1" min="0.5" style="width:72px"> mm</label><label>記号 <input id="cs" size="4" value="X"></label></div>
-<div id="cover" class="row"><label>1行目のラベル <input id="cl1" size="10" placeholder="（空欄）"></label><label>2行目のラベル <input id="cl2" size="10" value="名前"></label></div>
-<div id="inner"><div class="row"><label>中央 <input id="tc" size="14" value="No. ________"></label><label>右 <input id="tr" size="22" value="日付 ______年 ____月 ____日"></label></div>
-<div class="row"><label>上余白 <input id="mtop" type="number" value="14" min="0" style="width:64px"> mm</label><label>下余白 <input id="mbot" type="number" value="12" min="0" style="width:64px"> mm</label><label>行数 <input id="nr" type="number" min="1" placeholder="自動" style="width:72px"></label></div>
+<div class="row"><label>罫線 <select id="dir"><option value="h">横罫</option><option value="v">縦罫</option><option value="g">方眼</option></select></label><label>方眼の幅 <input id="gw" type="number" value="5.00" step="0.5" min="1" style="width:64px"> mm</label><label>線 <select id="lstyle"><option value="n">普通罫線</option><option value="d">ドット罫線</option><option value="t">点線</option></select></label><label>太さ <input id="lw" type="range" min="0.05" max="1" step="0.05" value="0.2"> <output id="lwo"></output></label><label>ドット間隔（倍率） <input id="dg" type="range" min="0.4" max="2.5" step="0.05" value="1"> <output id="dgo"></output></label></div>
+<div id="cpaper" class="row"><label>用紙の幅 <input id="pw" type="number" value="200.00" min="30" style="width:72px"> mm</label><label>高さ <input id="ph" type="number" value="280.00" min="30" style="width:72px"> mm</label></div>
+<div class="row"><label>背景模様 <select id="pm"><option value="n">なし</option><option value="t">文字</option><option value="i">画像</option></select></label><label>配置 <select id="par"><option value="tri">三角</option><option value="spi">スパイラル</option><option value="rad">放射状</option><option value="dia">菱形</option></select></label><label>文字 <input id="pt" size="6" value="★"></label><label>画像 <input id="pi" type="file" accept="image/*"></label></div>
+<div id="prow" class="row"><label>大きさ <input id="ps" type="range" min="3" max="40" step="1" value="8"> <output id="pso"></output></label><label>間隔 <input id="pg" type="range" min="4" max="80" step="1" value="14"> <output id="pgo"></output></label><label>濃さ <input id="pa" type="range" min="5" max="100" step="5" value="20"> <output id="pao"></output></label><label>放射の本数 <input id="pn" type="range" min="4" max="48" step="2" value="16"> <output id="pno"></output></label></div>
+<div id="irow" class="row"><label>拡大 <input id="iz" type="range" min="1" max="400" step="1" value="100"> <output></output></label><label>横位置 <input id="ix" type="range" min="0" max="100" step="1" value="50"> <output></output></label><label>縦位置 <input id="iy" type="range" min="0" max="100" step="1" value="50"> <output></output></label><label>画像の濃さ <input id="ia" type="range" min="5" max="100" step="5" value="100"> <output></output></label></div>
+<div id="cust" class="row"><label>色 <input id="cc" type="color" value="#888888"></label><label>幅 <input id="cw" type="number" value="9.00" step="0.1" min="0.5" style="width:72px"> mm</label><label>記号 <input id="cs" size="4" value="X"></label></div>
+<div id="cover" class="row"><label>縁の幅（0で縁なし） <input id="edge" type="number" value="5.00" min="0" step="0.5" style="width:64px"> mm</label><label>記号の文字サイズ <input id="fs1" type="range" min="20" max="170" step="3" value="56"> <output id="fs1o"></output></label><label>1行目のラベル <input id="cl1" size="10" placeholder="（空欄）"></label><label>2行目のラベル <input id="cl2" size="10" value="名前"></label></div>
+<div id="inner"><div class="row"><label>文字サイズ <input id="fs2" type="range" min="6" max="30" step="3" value="9"> <output id="fs2o"></output></label></div>
+<div class="row"><label>行数 <input id="nr" type="number" min="1" placeholder="自動" style="width:72px"></label></div>
 <p id="calc"></p>
 <details><summary>全サイズの行数表</summary><div id="tbl"></div></details></div>
+<div id="stage">
+<div id="mt" class="mi"><label>上余白 <input id="mtop" type="number" value="5.00" min="0" style="width:64px"> mm</label></div>
+<div id="mtx" class="mi"><label>中央 <input id="tc" size="14" value="No. ________"></label><label>右 <input id="tr" size="22" value="日付 ______年 ____月 ____日"></label></div>
+<div id="ml" class="mi"><label>左余白 <input id="mleft" type="number" value="10.00" min="0" style="width:60px"> mm</label></div>
 <canvas id="cv"></canvas>
+<div id="mr" class="mi"><label>右余白 <input id="mright" type="number" value="10.00" min="0" style="width:60px"> mm</label></div>
+<div id="mb" class="mi"><label>下余白 <input id="mbot" type="number" value="5.00" min="0" style="width:64px"> mm</label></div>
+</div>
 <div class="row"><button class="act" id="one">このサイズをPDFで保存</button><button class="act" id="all">全種類を1つのPDFで保存</button></div>
 <p id="msg"></p>
 <script>
 const F="'Hiragino Sans','Yu Gothic','Noto Sans JP',sans-serif";
-const PAPERS=[['B3 (364×515)',364,515],['A3 (297×420)',297,420],['B4 (257×364)',257,364],['A4 (210×297)',210,297],['B5 (182×257)',182,257],['セミB5 (179×252)',179,252],['A5 (148×210)',148,210],['B6 (128×182)',128,182],['A6 (105×148)',105,148]];
-const TINT=[0,.35,.6];
+const PAPERS=[['B3 (364×515)',364,515],['A3 (297×420)',297,420],['B4 (257×364)',257,364],['A4 (210×297)',210,297],['B5 (182×257)',182,257],['セミB5 (179×252)',179,252],['A5 (148×210)',148,210],['B6 (128×182)',128,182],['A6 (105×148)',105,148],['カスタム',200,280]];
+const TINT=[0,.1,.18,.26];
 const hexToRgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const mix=(a,b,t)=>{const A=hexToRgb(a),B=hexToRgb(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};
+const darken=(h,t)=>{const [r,g,b]=hexToRgb(h).map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let l=(mx+mn)/2,sa=0,hu=0;
+  if(d){sa=l>.5?d/(2-mx-mn):d/(mx+mn);hu=(mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4)/6}
+  l*=1-t;sa=Math.min(1,sa+t*0.3);
+  const q=l<.5?l*(1+sa):l+sa-l*sa,p=2*l-q,f=k=>{k=(k+1)%1;return k<1/6?p+(q-p)*6*k:k<.5?q:k<2/3?p+(q-p)*(2/3-k)*6:p};
+  return '#'+[f(hu+1/3),f(hu),f(hu-1/3)].map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('')};
 const lum=h=>{const [r,g,b]=hexToRgb(h);return(0.299*r+0.587*g+0.114*b)/255};
 // [入力用, 手書き, mm表記, mm値, 色, 段, 市販]
-const G=[['f','f',['1','1 1/3','1 2/3'],[1,4/3,5/3],'#2aa7a0'],
+const G=[['ffff','ffff',['0.55'],[0.55],'#b23a6b'],
+['fff','fff',['0.65'],[0.65],'#7a4fa3'],
+['ff','ff',['0.8'],[0.8],'#1f7a8c'],
+['f','f',['1','1 1/4','1 1/2','1 3/4'],[1,1.25,1.5,1.75],'#2aa7a0'],
 ['e','e',['2','2 1/3','2 2/3'],[2,7/3,8/3],'#f0a04b'],
 ['d','d',['3','3 1/3','3 2/3'],[3,10/3,11/3],'#5fbf6a'],
 ['D','D',['4','4 1/3','4 2/3'],[4,13/3,14/3],'#b5d94a'],
@@ -53,18 +75,20 @@ const G=[['f','f',['1','1 1/3','1 2/3'],[1,4/3,5/3],'#2aa7a0'],
 ['B','B',['6','6 1/2'],[6,6.5],'#4a7fd4',1],
 ['A','A',['7','7 1/2'],[7,7.5],'#e0504a',1]];
 const rows=[];
-G.forEach(([k,h,t,v,c,m])=>t.forEach((tx,i)=>rows.push({key:k+(i?i:''),hw:h+['','’','”'][i],mmT:tx,mm:v[i],hex:mix(c,'#ffffff',TINT[i]),mk:m&&i===0})));
-[['U','U','8',8,'#9b6b4a',1],['Ul','Ul','9',9,'#c9aee3',0],['UL','UL','10',10,'#9a6fc2',1],['Uw','Uw','11',11,'#ecd96a',0],['UW','UW','12',12,'#f6efb4',1],
-['Ux','Ux','13.5',13.5,'#cfcfcf',0],['UX','UX','15',15,'#9a9a9a',0],['Uy','Uy','16.5',16.5,'#f8bfd6',0],['UY','UY','18',18,'#ee8fb4',0],['Uz','Uz','21',21,'#6e6e6e',0],['UZ','UZ','25',25,'#2e2e2e',0]]
+G.forEach(([k,h,t,v,c,m])=>t.forEach((tx,i)=>rows.push({key:k+(i?i:''),hw:h+['','′','″','‴'][i],mmT:tx,mm:v[i],hex:darken(c,TINT[i]),mk:m&&i===0})));
+[['U','U','8',8,'#d9c8ee',1],['Ul','Ul','9',9,'#b896dc',0],['UL','UL','10',10,'#9a6fc2',1],['Uw','Uw','11',11,'#ecd96a',0],['UW','UW','12',12,'#f6efb4',1],
+['Ux','Ux','13.5',13.5,'#f8bfd6',0],['UX','UX','15',15,'#ee8fb4',0],['Uy','Uy','16.5',16.5,'#c4c4c4',0],['UY','UY','18',18,'#9a9a9a',0],['Uz','Uz','21',21,'#666666',0],['UZ','UZ','25',25,'#2e2e2e',0]]
 .forEach(([k,h,t,v,c,m])=>rows.push({key:k,hw:h,mmT:t,mm:v,hex:c,mk:!!m}));
 
 function render(r,p,c,s){if($('kind').value==='i')return renderInner(r,p,c,s);
-  const W=Math.round(p[1]*s),H=Math.round(p[2]*s);c.width=W;c.height=H;
+  const W0=Math.round(p[1]*s),H0=Math.round(p[2]*s);c.width=W0;c.height=H0;
+  const e=Math.round(num('edge',5)*s),W=W0-2*e,H=H0-2*e;
   const x=c.getContext('2d'),dark=lum(r.hex)<0.5,fg=dark?'#ffffff':'#222222';
-  x.fillStyle=r.hex;x.fillRect(0,0,W,H);
-  x.fillStyle='#2b2b2b';x.fillRect(0,0,9*s,H);
+  x.fillStyle='#ffffff';x.fillRect(0,0,W0,H0);x.translate(e,e);
+  x.fillStyle=r.hex;x.fillRect(0,0,W,H);drawPattern(x,W,H,s,fg,true);
+  x.fillStyle=mix(r.hex,'#000000',0.5);x.fillRect(0,0,9*s,H);
   const L=16*s,R=W-8*s,bw=(R-L)*0.78,bh=Math.min(42*s,H*0.16),bx=L+((R-L)-bw)/2,by=H*0.4-bh/2;
-  const dir=$('dir').value,pitch=(dir==='g'?Math.max(1,num('gw',5)):r.mm)*s,lw=num('lw',0.2)*s,st=$('lstyle').value,dg=Math.max(1,num('dg',6))*s,lc=mix(r.hex,dark?'#ffffff':'#000000',0.28);
+  const dir=$('dir').value,pitch=(dir==='g'&&!r.custom?Math.max(1,num('gw',5)):r.mm)*s,lw=num('lw',0.2)*s,st=$('lstyle').value,dg=Math.max(1.2*s,num('dg',1)*pitch),lc=mix(r.hex,dark?'#ffffff':'#000000',0.28);
   x.strokeStyle=lc;x.fillStyle=lc;x.lineWidth=lw;
   const seg=(x1,y1,x2,y2)=>{x.setLineDash(st==='t'?[2*s,1.5*s]:[]);x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();
     if(st==='d'){x.setLineDash([]);const len=Math.hypot(x2-x1,y2-y1),mx=(x1+x2)/2,my=(y1+y2)/2,ux=(x2-x1)/len,uy=(y2-y1)/len,m=Math.floor(len/2/dg+1e-6);
@@ -77,19 +101,36 @@ function render(r,p,c,s){if($('kind').value==='i')return renderInner(r,p,c,s);
   x.fillRect(bx,by,bw,bh);x.strokeRect(bx,by,bw,bh);x.beginPath();x.moveTo(bx,by+bh/2);x.lineTo(bx+bw,by+bh/2);x.stroke();
     x.fillStyle='#222';x.font=`${3.2*s}px ${F}`;x.textBaseline='top';x.textAlign='left';
   x.fillText($('cl1').value,bx+2*s,by+1.5*s);x.fillText($('cl2').value,bx+2*s,by+bh/2+1.5*s);
-  x.fillStyle=fg;x.textBaseline='alphabetic';x.font=`bold ${20*s}px ${F}`;if(dir==='g')symS(x,20*s,L,H-12*s,'left',true);else x.fillText(r.hw,L,H-12*s);
-  if(dir!=='g'){x.textAlign='right';x.font=`${6*s}px ${F}`;x.fillText(r.mmT+' mm',R,H-12*s)}
+  x.fillStyle=fg;x.textBaseline='alphabetic';const fsC=num('fs1',56)*25.4/72*s;x.font=`bold ${fsC}px ${F}`;if(dir==='g'&&!r.custom)symS(x,fsC,L,H-12*s,'left',true);else x.fillText(r.hw,L,H-12*s);
+  if(dir!=='g'||r.custom){x.textAlign='right';x.font=`${fsC*0.3}px ${F}`;x.fillText(r.mm.toFixed(2)+' mm',R,H-12*s)}
 }
-function symS(x,fs,px,py,align,bold){const sub=String(num('gw',5)),b=bold?'bold ':'';
+function symS(x,fs,px,py,align,bold){const sub=num('gw',5).toFixed(2),b=bold?'bold ':'';
   x.font=`${b}${fs}px ${F}`;const w1=x.measureText('S').width;x.font=`${b}${fs*0.6}px ${F}`;const t=w1+x.measureText(sub).width,sx=align==='right'?px-t:px;
   x.textAlign='left';x.font=`${b}${fs}px ${F}`;x.fillText('S',sx,py);x.font=`${b}${fs*0.6}px ${F}`;x.fillText(sub,sx+w1,py+fs*0.25);x.font=`${b}${fs}px ${F}`}
-const pp=()=>{const p=PAPERS[$('paper').value];return $('ori').value==='l'?[p[0],p[2],p[1]]:p};
-const num=(id,d)=>{const v=parseFloat(document.getElementById(id).value);return isFinite(v)&&v>=0?v:d};
+const pp=()=>{let p=PAPERS[$('paper').value];if(p[0]==='カスタム')p=[p[0],Math.max(30,num('pw',200)),Math.max(30,num('ph',280))];return $('ori').value==='l'?[p[0],p[2],p[1]]:p};
+let patImg=null;
+function drawImg(x,W,H){
+  const iw=patImg.width,ih=patImg.height,k=Math.max(W/iw,H/ih)*num('iz',100)/100,dw=iw*k,dh=ih*k,ox=(W-dw)*num('ix',50)/100,oy=(H-dh)*num('iy',50)/100;
+  x.save();x.beginPath();x.rect(0,0,W,H);x.clip();x.globalAlpha=num('ia',100)/100;x.drawImage(patImg,ox,oy,dw,dh);x.restore()}
+function drawPattern(x,W,H,s,col,cov){
+  const mode=$('pm').value;if(mode==='n')return;if(mode==='i'){if(patImg&&cov)drawImg(x,W,H);return}
+  const sz=num('ps',8)*s,sp=Math.max(2,num('pg',14))*s,al=num('pa',20)/100,arr=$('par').value,txt=$('pt').value||'★';
+  x.save();x.beginPath();x.rect(0,0,W,H);x.clip();x.globalAlpha=al;x.fillStyle=col;x.textAlign='center';x.textBaseline='middle';x.font=`${sz}px ${F}`;
+  const put=(px,py,ang)=>{if(px<-sz||py<-sz||px>W+sz||py>H+sz)return;x.save();x.translate(px,py);if(ang)x.rotate(ang);
+    if(mode==='i'){const k=Math.min(sz/patImg.width,sz/patImg.height);x.drawImage(patImg,-patImg.width*k/2,-patImg.height*k/2,patImg.width*k,patImg.height*k)}else x.fillText(txt,0,0);x.restore()};
+  const cx=W/2,cy=H/2,R=Math.hypot(W,H)/2;
+  if(arr==='tri'){const dy=sp*0.866;for(let j=0,y=0;y<H+dy;j++,y+=dy)for(let xx=(j%2?sp/2:0);xx<W+sp;xx+=sp)put(xx,y,0)}
+  else if(arr==='dia'){const h=sp/2;for(let j=0,y=0;y<H+h;j++,y+=h)for(let xx=(j%2?h:0);xx<W+sp;xx+=sp)put(xx,y,0)}
+  else if(arr==='rad'){const n=Math.max(3,Math.round(num('pn',16)));put(cx,cy,0);for(let k=0;k<n;k++){const a=2*Math.PI*k/n;for(let r=sp;r<R+sp;r+=sp)put(cx+Math.cos(a)*r,cy+Math.sin(a)*r,a)}}
+  else{let th=0;for(let i=0;i<30000;i++){const r=sp*th/(2*Math.PI)+sp/2;if(r>R+sp)break;put(cx+Math.cos(th)*r,cy+Math.sin(th)*r,th+Math.PI/2);th+=sp/Math.max(r,sp*0.5)}}
+  x.restore()}
+const hh=()=>Math.max(7,num('fs2',9)*25.4/72*2);
+const num=(id,d)=>{const e=document.getElementById(id+'n')||document.getElementById(id),r=document.getElementById(id);let v=parseFloat(e.value);if(isFinite(v)&&r&&r.type==='range')v=Math.min(+r.max,Math.max(+r.min,v));return isFinite(v)&&v>=0?v:d};
 function renderInner(r,p,c,s){
   const W=Math.round(p[1]*s),H=Math.round(p[2]*s);c.width=W;c.height=H;
-  const x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,W,H);
-  const col='#000000',tcol=mix(r.hex,'#000000',0.45),dir=$('dir').value,pitch=(dir==='g'?Math.max(1,num('gw',5)):r.mm)*s,top=num('mtop',14)*s,bot=num('mbot',12)*s,L=10*s,R=W-10*s,HH=7*s;
-  const lw=num('lw',0.2)*s,st=$('lstyle').value,dg=Math.max(1,num('dg',6))*s,nr=parseInt($('nr').value);
+  const x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,W,H);drawPattern(x,W,H,s,mix(r.hex,'#000000',0.45));
+  const col='#000000',tcol=mix(r.hex,'#000000',0.45),dir=$('dir').value,pitch=(dir==='g'&&!r.custom?Math.max(1,num('gw',5)):r.mm)*s,top=num('mtop',14)*s,bot=num('mbot',12)*s,L=num('mleft',10)*s,R=W-num('mright',10)*s,HH=hh()*s;
+  const lw=num('lw',0.2)*s,st=$('lstyle').value,dg=Math.max(1.2*s,num('dg',1)*pitch),nr=parseInt($('nr').value);
   x.strokeStyle=col;x.fillStyle=col;x.lineWidth=lw;
   const seg=(x1,y1,x2,y2)=>{x.setLineDash(st==='t'?[2*s,1.5*s]:[]);x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();
     if(st==='d'){x.setLineDash([]);const len=Math.hypot(x2-x1,y2-y1),mx=(x1+x2)/2,my=(y1+y2)/2,ux=(x2-x1)/len,uy=(y2-y1)/len,m=Math.floor(len/2/dg+1e-6);
@@ -98,18 +139,18 @@ function renderInner(r,p,c,s){
   if(dir==='h'){
     const n=Math.floor((H-top-bot-HH)/pitch+1e-6),NR=Math.max(1,nr>0?nr:n),y0=top+((H-top-bot)-NR*pitch-HH)/2+HH;
     for(let k=0;k<=NR;k++)seg(L,y0+k*pitch,R,y0+k*pitch);
-    ty=y0-4*s;
+    ty=y0-HH*0.57;
   }else{
     const yT=top+HH,yB=H-bot,NC=Math.max(1,dir==='v'&&nr>0?nr:Math.floor((R-L)/pitch+1e-6)),x0=L+((R-L)-NC*pitch)/2;
-    ty=top+3.5*s;
+    ty=top+HH*0.5;
     if(dir==='v'){for(let k=0;k<=NC;k++)seg(x0+k*pitch,yT,x0+k*pitch,yB)}
     else{const NR=Math.max(1,Math.floor((yB-yT)/pitch+1e-6)),y0=yT+((yB-yT)-NR*pitch)/2;
       for(let k=0;k<=NR;k++)seg(x0,y0+k*pitch,x0+NC*pitch,y0+k*pitch);
       for(let k=0;k<=NC;k++)seg(x0+k*pitch,y0,x0+k*pitch,y0+NR*pitch)}
   }
   x.setLineDash([]);
-  x.fillStyle=tcol;x.font=`${3.5*s}px ${F}`;x.textBaseline='alphabetic';
-  if(dir==='g')symS(x,3.5*s,L,ty,'left',false);else{x.textAlign='left';x.fillText(r.hw+'  '+r.mmT+'mm',L,ty)}
+  const fsI=num('fs2',9)*25.4/72*s;x.fillStyle=tcol;x.font=`${fsI}px ${F}`;x.textBaseline='alphabetic';
+  if(dir==='g'&&!r.custom)symS(x,fsI,L,ty,'left',false);else{x.textAlign='left';x.fillText(r.hw+'  '+r.mm.toFixed(2)+'mm',L,ty)}
   x.textAlign='center';x.fillText($('tc').value,W/2,ty);
   x.textAlign='right';x.fillText($('tr').value,R,ty);
 }
@@ -134,18 +175,28 @@ function pdf(jpgs,wmm,hmm){
 const $=id=>document.getElementById(id),cv=$('cv'),msg=$('msg');
 let cur=rows.find(r=>r.key==='UW');
 PAPERS.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p[0];$('paper').append(o)});$('paper').value=5;
+['ffff','fff','ff','f','f1','f2','f3'].forEach((k,i)=>{rows.find(r=>r.key===k).hex=mix(mix('#2aa7a0','#ffffff',0.75),mix('#2aa7a0','#000000',0.5),i/6)});
 rows.push({key:'custom',hw:'X',mmT:'9',mm:9,hex:'#888888',mk:false,custom:true});
 rows.forEach(r=>{const b=document.createElement('button');b.style.background=r.hex;b.style.color=lum(r.hex)<0.5?'#fff':'#222';
-  b.innerHTML=r.custom?'カスタム':`${r.hw}<small>${r.mmT}mm</small>`;b.onclick=()=>{cur=r;autoMargin();draw()};r.btn=b;$('grid').append(b)});
-function autoMargin(){$('mtop').value=5;$('mbot').value=5;$('nr').value=''}
+  b.innerHTML=r.custom?'カスタム':`${r.hw}<small>${r.mm.toFixed(2)}mm</small>`;b.onclick=()=>{cur=r;autoMargin();draw()};r.btn=b;$('grid').append(b)});
+function autoMargin(){$('mtop').value='5.00';$('mbot').value='5.00';$('nr').value=''}
 function calc(){const p=pp(),H=p[2],mt=num('mtop',14),mb=num('mbot',12);
-  if($('dir').value!=='h'){const gp=$('dir').value==='g'?num('gw',5):cur.mm,nc=Math.floor((p[1]-20)/gp+1e-6),nrr=Math.floor((H-mt-mb-7)/gp+1e-6);$('calc').textContent=$('dir').value==='v'?`${cur.hw}\uff08${cur.mmT}mm\uff09: ${nc}\u5217\uff08\u7dda${nc+1}\u672c\uff09`:`\u65b9\u773c ${gp}mm: \u6a2a${nc}\u30de\u30b9\u00d7\u7e26${nrr}\u30de\u30b9`;$('tbl').innerHTML='';return}
-  const f=(m,q)=>{const n=q>0?q:Math.floor((H-mt-mb-7)/m+1e-6),sl=(H-mt-mb)-n*m-7;return[n,+(mt+sl/2).toFixed(1),+(mb+sl/2).toFixed(1)]};
-  const[n,ru,rd]=f(cur.mm,parseInt($('nr').value));$('calc').textContent=`${cur.hw}（${cur.mmT}mm）: ${n}行（線${n+1}本）／上の余白 ${ru}mm・下の余白 ${rd}mm`;
-  $('tbl').innerHTML='<table>'+rows.map(r=>{const[k,m1,m2]=f(r.mm);return`<tr><td>${r.hw}</td><td>${r.mmT}mm</td><td>${k}行</td><td>上${m1}・下${m2}mm</td></tr>`}).join('')+'</table>'}
+  if($('dir').value!=='h'){const gp=$('dir').value==='g'&&!cur.custom?num('gw',5):cur.mm,nc=Math.floor((p[1]-num('mleft',10)-num('mright',10))/gp+1e-6),nrr=Math.floor((H-mt-mb-hh())/gp+1e-6);$('calc').textContent=$('dir').value==='v'?`${cur.hw}\uff08${cur.mm.toFixed(2)}mm\uff09: ${nc}\u5217\uff08\u7dda${nc+1}\u672c\uff09`:`\u65b9\u773c ${gp.toFixed(2)}mm: \u6a2a${nc}\u30de\u30b9\u00d7\u7e26${nrr}\u30de\u30b9`;$('tbl').innerHTML='';return}
+  const f=(m,q)=>{const n=q>0?q:Math.floor((H-mt-mb-hh())/m+1e-6),sl=(H-mt-mb)-n*m-hh();return[n,+(mt+sl/2).toFixed(2),+(mb+sl/2).toFixed(2)]};
+  const[n,ru,rd]=f(cur.mm,parseInt($('nr').value));$('calc').textContent=`${cur.hw}（${cur.mm.toFixed(2)}mm）: ${n}行（線${n+1}本）／上の余白 ${ru.toFixed(2)}mm・下の余白 ${rd.toFixed(2)}mm`;
+  $('tbl').innerHTML='<table>'+rows.map(r=>{const[k,m1,m2]=f(r.mm);return`<tr><td>${r.hw}</td><td>${r.mm.toFixed(2)}mm</td><td>${k}行</td><td>上${m1.toFixed(2)}・下${m2.toFixed(2)}mm</td></tr>`}).join('')+'</table>'}
 function syncCustom(){const w=parseFloat($('cw').value),c=rows[rows.length-1];c.mm=isFinite(w)&&w>0?w:9;c.mmT=String(+c.mm.toFixed(2));c.hex=$('cc').value;c.hw=$('cs').value||'X';c.btn.style.background=c.hex;c.btn.style.color=lum(c.hex)<0.5?'#fff':'#222'}
-function draw(){syncCustom();$('cust').style.display=cur.custom?'':'none';$('grid').classList.toggle('gm',$('dir').value==='g');rows.forEach(r=>r.btn.classList.toggle('on',r===cur));const inn=$('kind').value==='i';$('inner').style.display=inn?'':'none';$('cover').style.display=inn?'none':'';render(cur,pp(),cv,5);if(inn)calc()}
-$('paper').onchange=()=>{autoMargin();draw()};$('ori').onchange=draw;$('kind').onchange=draw;['cc','cw','cs','cl1','cl2','tc','tr','mtop','mbot','nr','lw','dg','lstyle','dir','gw'].forEach(i=>$(i).oninput=draw);autoMargin();draw();
+function draw(){$('prow').style.display=$('pm').value==='t'?'':'none';$('irow').style.display=$('pm').value==='i'?'':'none';syncCustom();$('cust').style.display=cur.custom?'':'none';$('cpaper').style.display=PAPERS[$('paper').value][0]==='カスタム'?'':'none';$('grid').classList.toggle('gm',$('dir').value==='g');rows.forEach(r=>r.btn.classList.toggle('on',r===cur));const inn=$('kind').value==='i';$('inner').style.display=inn?'':'none';$('cover').style.display=inn?'none':'';document.querySelectorAll('.mi').forEach(e=>e.style.display=inn?'':'none');render(cur,pp(),cv,5);if(inn)calc()}
+$('paper').onchange=()=>{autoMargin();draw()};$('ori').onchange=draw;$('kind').onchange=draw;['pm','par','pt','ps','pg','pa','pn','edge','fs1','fs2','mleft','mright','pw','ph','cc','cw','cs','cl1','cl2','tc','tr','mtop','mbot','nr','lw','dg','lstyle','dir','gw'].forEach(i=>$(i).oninput=draw);
+$('pi').onchange=e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{patImg=im;$('pm').value='i';draw()};im.src=fr.result};fr.readAsDataURL(f)};
+const UN={iz:'%',ix:'%',iy:'%',ia:'%',lw:'mm',dg:'×',fs1:'pt',fs2:'pt',ps:'mm',pg:'mm',pa:'%',pn:'本'};
+document.querySelectorAll('input[type=range]').forEach(r=>{const o=r.parentElement.querySelector('output'),n=document.createElement('input');
+  n.type='number';n.id=r.id+'n';n.step='0.01';n.min=r.min;n.max=r.max;n.style.width='80px';n.value=(+r.value).toFixed(2);
+  const u=document.createElement('span');u.textContent=UN[r.id]||'';if(o)o.replaceWith(n,u);else r.after(n,u);
+  r.oninput=()=>{n.value=(+r.value).toFixed(2);draw()};
+  n.oninput=()=>{const v=parseFloat(n.value);if(isFinite(v))r.value=v;draw()};
+  n.onblur=()=>{const v=parseFloat(n.value);if(isFinite(v))n.value=Math.min(+r.max,Math.max(+r.min,v)).toFixed(2)}});
+autoMargin();draw();
 async function toJpg(r,p){const c=document.createElement('canvas');render(r,p,c,6);
   const b=await new Promise(res=>c.toBlob(res,'image/jpeg',0.92));return{b:new Uint8Array(await b.arrayBuffer()),w:c.width,h:c.height}}
 async function save(list,name){
