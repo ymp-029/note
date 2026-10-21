@@ -41,7 +41,7 @@ canvas{display:block;margin:0 auto;max-width:100%;max-height:70vh;border:1px sol
 <div id="cust" class="row"><label>色 <input id="cc" type="color" value="#888888"></label><label>幅 <input id="cw" type="number" value="9.00" step="0.1" min="0.5" style="width:72px"> mm</label><label>記号 <input id="cs" size="4" value="X"></label></div>
 <div id="cover" class="row"><label><input id="lbl" type="checkbox" checked> ラベルを表示</label><label>縁の幅（0で縁なし） <input id="edge" type="number" value="5.00" min="0" step="0.5" style="width:64px"> mm</label><label>記号の文字サイズ <input id="fs1" type="range" min="20" max="170" step="3" value="56"> <output id="fs1o"></output></label><label>1行目のラベル <input id="cl1" size="10" placeholder="（空欄）"></label><label>2行目のラベル <input id="cl2" size="10" value="名前"></label></div>
 <div id="inner"><div class="row"><label>文字サイズ <input id="fs2" type="range" min="6" max="30" step="3" value="9"> <output id="fs2o"></output></label></div>
-<div class="row"><label>行数 <input id="nr" type="number" min="1" placeholder="自動" style="width:72px"></label></div>
+<div class="row"><label>倍率（B7 = 1.00。余白は B7 の値 × 倍率、縁は A4 で 5mm） <input id="zk" type="number" step="0.01" value="1.00" style="width:72px"></label><label>行数 <input id="nr" type="number" min="1" placeholder="自動" style="width:72px"></label></div>
 <p id="calc"></p>
 <details><summary>全サイズの行数表</summary><div id="tbl"></div></details></div>
 <div id="stage">
@@ -56,7 +56,7 @@ canvas{display:block;margin:0 auto;max-width:100%;max-height:70vh;border:1px sol
 <p id="msg"></p>
 <script>
 const F="'Hiragino Sans','Yu Gothic','Noto Sans JP',sans-serif";
-const PAPERS=[['B3 (364×515)',364,515],['A3 (297×420)',297,420],['B4 (257×364)',257,364],['A4 (210×297)',210,297],['B5 (182×257)',182,257],['セミB5 (179×252)',179,252],['A5 (148×210)',148,210],['B6 (128×182)',128,182],['A6 (105×148)',105,148],['カスタム',200,280]];
+const PAPERS=[['B3 (364×515)',364,515],['A3 (297×420)',297,420],['B4 (257×364)',257,364],['A4 (210×297)',210,297],['B5 (182×257)',182,257],['セミB5 (179×252)',179,252],['A5 (148×210)',148,210],['B6 (128×182)',128,182],['A6 (105×148)',105,148],['B7 (91×128)',91,128],['A7 (74×105)',74,105],['カスタム',200,280]];
 const TINT=[0,.1,.18,.26];
 const hexToRgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const mix=(a,b,t)=>{const A=hexToRgb(a),B=hexToRgb(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};
@@ -96,7 +96,7 @@ function render(r,p,c,s){if($('kind').value==='i')return renderInner(r,p,c,s);
   const seg=(x1,y1,x2,y2)=>{x.setLineDash(st==='t'?[2*s,1.5*s]:[]);x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();
     if(st==='d'){x.setLineDash([]);const len=Math.hypot(x2-x1,y2-y1),mx=(x1+x2)/2,my=(y1+y2)/2,ux=(x2-x1)/len,uy=(y2-y1)/len,m=Math.floor(len/2/dg+1e-6);
       for(let j=-m;j<=m;j++){x.beginPath();x.arc(mx+ux*j*dg,my+uy*j*dg,Math.max(lw*1.8,0.45*s),0,6.2832);x.fill()}}};
-  const aT=14*s,aB=H-36*s;
+  const aT=14*s,aB=H-12*s-num('fs1',56)*25.4/72*s-2*s;
   if(dir!=='v')for(let y=aT;y<=aB+1e-6;y+=pitch)seg(L,y,R,y);
   if(dir!=='h')for(let xx=L;xx<=R+1e-6;xx+=pitch)seg(xx,aT,xx,aB);
   x.setLineDash([]);
@@ -117,9 +117,9 @@ function symS(x,fs,px,py,align,bold){const sub=sig2(num('gw',5)),b=bold?'bold ':
 const PUF={mm:1,cm:10,in:25.4};let puPrev='mm';
 const pf=()=>PUF[$('punit').value];
 function paperLabels(){const f=pf(),u=$('punit').value;[...$('paper').options].forEach((o,i)=>{const p=PAPERS[i];if(p[0]==='カスタム'){o.textContent='カスタム';return}const nm=p[0].replace(/ \(.*$/,''),fm=v=>u==='mm'?String(v):(v/f).toFixed(2);o.textContent=`${nm} (${fm(p[1])}×${fm(p[2])}${u})`})}
-const pp=()=>{let p=PAPERS[$('paper').value];if(p[0]==='カスタム')p=[p[0],Math.max(30,num('pw',200)*pf()),Math.max(30,num('ph',280)*pf())];return $('ori').value==='l'?[p[0],p[2],p[1]]:p};
+const pp=()=>{let p=PAPERS[$('paper').value];if(p[0]==='カスタム')p=[p[0],Math.max(1,num('pw',200)*pf()),Math.max(1,num('ph',280)*pf())];return $('ori').value==='l'?[p[0],p[2],p[1]]:p};
 let stickers=[],sel=0,drag=null;
-const sv=(id,d)=>{const e=document.getElementById(id+'n')||document.getElementById(id),r=document.getElementById(id);let v=parseFloat(e.value);if(!isFinite(v))return d;return Math.min(+r.max,Math.max(+r.min,v))};
+const sv=(id,d)=>{const e=document.getElementById(id+'n')||document.getElementById(id),r=document.getElementById(id);let v=parseFloat(e.value);if(!isFinite(v))return d;return v};
 function setS(id,v){$(id).value=v;const n=$(id+'n');if(n)n.value=(+v).toFixed(2)}
 function loadSticker(){const t=stickers[sel];if(!t)return;setS('sx',t.x);setS('sy',t.y);setS('ss',t.size);setS('sr',t.rot);setS('sa',t.alpha)}
 function refreshSel(){const o=$('ssel');o.innerHTML='';stickers.forEach((_,i)=>{const e=document.createElement('option');e.value=i;e.textContent='シール '+(i+1);o.append(e)});if(sel>=stickers.length)sel=stickers.length-1;if(sel<0)sel=0;o.value=sel;$('scnt').textContent=stickers.length+'/10'}
@@ -146,7 +146,7 @@ const sigU=v=>{if(!v)return'0';const n=Math.abs(v)>=10?3:2,d=Math.floor(Math.log
 const szu=v=>{const k=$('unit').value,u=UNITS[k];return (k==='mm'?v.toFixed(2):sigU(v/u[1]))+' '+u[0]};
 const szt=v=>$('smm').checked?szu(v):'';
 const hh=()=>Math.max(7,num('fs2',9)*25.4/72*2);
-const num=(id,d)=>{const e=document.getElementById(id+'n')||document.getElementById(id),r=document.getElementById(id);let v=parseFloat(e.value);if(isFinite(v)&&r&&r.type==='range')v=Math.min(+r.max,Math.max(+r.min,v));return isFinite(v)&&v>=0?v:d};
+const num=(id,d)=>{const e=document.getElementById(id+'n')||document.getElementById(id),r=document.getElementById(id);let v=parseFloat(e.value);return isFinite(v)&&v>=0?v:d};
 function renderInner(r,p,c,s){
   const W=Math.round(p[1]*s),H=Math.round(p[2]*s);c.width=W;c.height=H;
   const x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,W,H);drawPattern(x,W,H,s,mix(r.hex,'#000000',0.45));
@@ -200,7 +200,9 @@ PAPERS.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.text
 rows.push({key:'custom',hw:'X',mmT:'9',mm:9,hex:'#888888',mk:false,custom:true});
 rows.forEach(r=>{const b=document.createElement('button');b.style.background=r.hex;b.style.color=lum(r.hex)<0.5?'#fff':'#222';
   b.innerHTML=r.custom?'カスタム':`${r.hw}<small></small>`;b.onclick=()=>{cur=r;autoMargin();draw()};r.btn=b;$('grid').append(b)});
-function autoMargin(){$('mtop').value='5.00';$('mbot').value='5.00';$('nr').value=''}
+const MB=[8,6,3,3],MID=['mtop','mbot','mleft','mright'];
+function setByK(k){MID.forEach((id,i)=>$(id).value=(MB[i]*k).toFixed(2));$('edge').value=(5*k*91/210).toFixed(2)}
+function autoMargin(){const p=pp(),k=Math.min(p[1],p[2])/91;$('zk').value=k.toFixed(2);setByK(k);$('nr').value=''}
 function calc(){const p=pp(),H=p[2],mt=num('mtop',14),mb=num('mbot',12);
   if($('dir').value!=='h'){const gp=$('dir').value==='g'&&!cur.custom?num('gw',5):cur.mm,nc=Math.floor((p[1]-num('mleft',10)-num('mright',10))/gp+1e-6),nrr=Math.floor((H-mt-mb-hh())/gp+1e-6);$('calc').textContent=$('dir').value==='v'?`${cur.hw}\uff08${szu(cur.mm)}\uff09: ${nc}\u5217\uff08\u7dda${nc+1}\u672c\uff09`:`\u65b9\u773c ${gp.toFixed(2)}mm: \u6a2a${nc}\u30de\u30b9\u00d7\u7e26${nrr}\u30de\u30b9`;$('tbl').innerHTML='';return}
   const f=(m,q)=>{const n=q>0?q:Math.floor((H-mt-mb-hh())/m+1e-6),sl=(H-mt-mb)-n*m-hh();return[n,+(mt+sl/2).toFixed(2),+(mb+sl/2).toFixed(2)]};
@@ -209,7 +211,7 @@ function calc(){const p=pp(),H=p[2],mt=num('mtop',14),mb=num('mbot',12);
 function syncCustom(){const w=parseFloat($('cw').value),c=rows[rows.length-1];c.mm=isFinite(w)&&w>0?w:9;c.mmT=String(+c.mm.toFixed(2));c.hex=$('cc').value;c.hw=$('cs').value||'X';c.btn.style.background=c.hex;c.btn.style.color=lum(c.hex)<0.5?'#fff':'#222'}
 function draw(){rows.forEach(r=>{const m=r.btn&&r.btn.querySelector('small');if(m)m.textContent=szt(r.mm)});$('ptl').style.display=$('pm').value==='s'?'none':'';if($('pm').value==='s'&&stickers[sel]){const t=stickers[sel];t.x=sv('sx',t.x);t.y=sv('sy',t.y);t.size=sv('ss',t.size);t.rot=sv('sr',t.rot);t.alpha=sv('sa',t.alpha)}
   $('srow').style.display=$('pm').value==='s'?'':'none';cv.style.touchAction=$('pm').value==='s'?'none':'';[$('pt'),$('par')].forEach(e=>e.parentElement.style.display=$('pm').value==='t'?'':'none');$('pi').parentElement.style.display=$('pm').value==='i'?'':'none';$('prow').style.display=$('pm').value==='t'?'':'none';$('irow').style.display=$('pm').value==='i'?'':'none';syncCustom();$('cust').style.display=cur.custom?'':'none';$('cpaper').style.display=PAPERS[$('paper').value][0]==='カスタム'?'':'none';$('grid').classList.toggle('gm',$('dir').value==='g');rows.forEach(r=>r.btn.classList.toggle('on',r===cur));const inn=$('kind').value==='i';$('inner').style.display=inn?'':'none';$('cover').style.display=inn?'none':'';document.querySelectorAll('.mi').forEach(e=>e.style.display=inn?'':'none');render(cur,pp(),cv,5);if(inn)calc()}
-$('paper').onchange=()=>{autoMargin();draw()};$('ori').onchange=draw;$('punit').onchange=()=>{const nf=pf();['pw','ph'].forEach(id=>{const e=$(id),v=parseFloat(e.value);if(isFinite(v))e.value=(v*PUF[puPrev]/nf).toFixed(2)});puPrev=$('punit').value;document.querySelectorAll('.pu').forEach(e=>e.textContent=puPrev);paperLabels();draw()};$('kind').onchange=draw;['smm','unit','imgf','stkf','lbl','pm','par','pt','ps','pg','pa','pn','edge','fs1','fs2','mleft','mright','pw','ph','cc','cw','cs','cl1','cl2','tc','tr','mtop','mbot','nr','lw','dg','lstyle','dir','gw'].forEach(i=>$(i).oninput=draw);
+$('paper').onchange=()=>{autoMargin();draw()};$('zk').oninput=()=>{const k=parseFloat($('zk').value);if(isFinite(k))setByK(k);draw()};['pw','ph'].forEach(id=>$(id).addEventListener('input',()=>{autoMargin();draw()}));$('ori').onchange=draw;$('punit').onchange=()=>{const nf=pf();['pw','ph'].forEach(id=>{const e=$(id),v=parseFloat(e.value);if(isFinite(v))e.value=(v*PUF[puPrev]/nf).toFixed(2)});puPrev=$('punit').value;document.querySelectorAll('.pu').forEach(e=>e.textContent=puPrev);paperLabels();draw()};$('kind').onchange=draw;['smm','unit','imgf','stkf','lbl','pm','par','pt','ps','pg','pa','pn','edge','fs1','fs2','mleft','mright','pw','ph','cc','cw','cs','cl1','cl2','tc','tr','mtop','mbot','nr','lw','dg','lstyle','dir','gw'].forEach(i=>$(i).oninput=draw);
 $('pi').onchange=e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{patImg=im;$('pm').value='i';draw()};im.src=fr.result};fr.readAsDataURL(f)};
 
 cv.addEventListener('pointerdown',ev=>{if($('pm').value!=='s'||$('kind').value!=='c')return;const q=cvPos(ev);
@@ -221,11 +223,11 @@ $('ssel').onchange=()=>{sel=+$('ssel').value;loadSticker();draw()};
 $('sdel').onclick=()=>{stickers.splice(sel,1);refreshSel();loadSticker();draw()};
 const UN={sx:'%',sy:'%',ss:'mm',sr:'°',sa:'%',iz:'%',ix:'%',iy:'%',ia:'%',lw:'mm',dg:'×',fs1:'pt',fs2:'pt',ps:'mm',pg:'mm',pa:'%',pn:'本'};
 document.querySelectorAll('input[type=range]').forEach(r=>{const o=r.parentElement.querySelector('output'),n=document.createElement('input');
-  n.type='number';n.id=r.id+'n';n.step='0.01';n.min=r.min;n.max=r.max;n.style.width='80px';n.value=(+r.value).toFixed(2);
+  n.type='number';n.id=r.id+'n';n.step='0.01';n.style.width='80px';n.value=(+r.value).toFixed(2);
   const u=document.createElement('span');u.textContent=UN[r.id]||'';if(o)o.replaceWith(n,u);else r.after(n,u);
   r.oninput=()=>{n.value=(+r.value).toFixed(2);draw()};
   n.oninput=()=>{const v=parseFloat(n.value);if(isFinite(v))r.value=v;draw()};
-  n.onblur=()=>{const v=parseFloat(n.value);if(isFinite(v))n.value=Math.min(+r.max,Math.max(+r.min,v)).toFixed(2)}});
+  n.onblur=()=>{const v=parseFloat(n.value);if(isFinite(v))n.value=v.toFixed(2)}});
 autoMargin();draw();
 async function toJpg(r,p){const c=document.createElement('canvas');render(r,p,c,6);
   const b=await new Promise(res=>c.toBlob(res,'image/jpeg',0.92));return{b:new Uint8Array(await b.arrayBuffer()),w:c.width,h:c.height}}
