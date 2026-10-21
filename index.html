@@ -28,10 +28,11 @@ canvas{display:block;margin:0 auto;max-width:100%;max-height:70vh;border:1px sol
 <div class="row">
 <label>種類 <select id="kind"><option value="c">表紙</option><option value="i">中紙（罫線）</option></select></label>
 <label>用紙 <select id="paper"></select></label>
+<label>紙の単位 <select id="punit"><option value="mm">mm</option><option value="cm">cm</option><option value="in">inch</option></select></label>
 <label>向き <select id="ori"><option value="p">縦</option><option value="l">横</option></select></label>
 </div>
 <div class="row"><label><input id="smm" type="checkbox" checked> サイズ表記</label><label>単位 <select id="unit"><option value="mm">mm</option><option value="cm">cm</option><option value="in">inch</option><option value="mil">mil</option><option value="pt">pt</option><option value="pc">pica</option><option value="px">px（96dpi）</option><option value="Q">Q（級）</option><option value="bu">分（尺貫法）</option><option value="sun">寸（尺貫法）</option></select></label><label>罫線 <select id="dir"><option value="h">横罫</option><option value="v">縦罫</option><option value="g">方眼</option></select></label><label>方眼の幅 <input id="gw" type="number" value="5.00" step="0.5" min="1" style="width:64px"> mm</label><label>線 <select id="lstyle"><option value="n">普通罫線</option><option value="d">ドット罫線</option><option value="t">点線</option></select></label><label>太さ <input id="lw" type="range" min="0.05" max="1" step="0.05" value="0.2"> <output id="lwo"></output></label><label>ドット間隔（倍率） <input id="dg" type="range" min="0.4" max="2.5" step="0.05" value="1"> <output id="dgo"></output></label></div>
-<div id="cpaper" class="row"><label>用紙の幅 <input id="pw" type="number" value="200.00" min="30" style="width:72px"> mm</label><label>高さ <input id="ph" type="number" value="280.00" min="30" style="width:72px"> mm</label></div>
+<div id="cpaper" class="row"><label>用紙の幅 <input id="pw" type="number" value="200.00" min="0" style="width:72px"> <span class="pu">mm</span></label><label>高さ <input id="ph" type="number" value="280.00" min="0" style="width:72px"> <span class="pu">mm</span></label></div>
 <div class="row"><label>背景模様 <select id="pm"><option value="n">なし</option><option value="t">文字</option><option value="i">画像</option><option value="s">シール</option></select></label><label>配置 <select id="par"><option value="tri">三角</option><option value="spi">スパイラル</option><option value="rad">放射状</option><option value="dia">菱形</option></select></label><label id="ptl">文字 <input id="pt" size="6" value="★"></label><label>画像 <input id="pi" type="file" accept="image/*"></label></div>
 <div id="prow" class="row"><label>大きさ <input id="ps" type="range" min="3" max="40" step="1" value="8"> <output id="pso"></output></label><label>間隔 <input id="pg" type="range" min="4" max="80" step="1" value="14"> <output id="pgo"></output></label><label>濃さ <input id="pa" type="range" min="5" max="100" step="5" value="20"> <output id="pao"></output></label><label>放射の本数 <input id="pn" type="range" min="4" max="48" step="2" value="16"> <output id="pno"></output></label></div>
 <div id="irow" class="row"><label><input id="imgf" type="checkbox"> 画像を手前に</label><label>拡大 <input id="iz" type="range" min="1" max="400" step="1" value="100"> <output></output></label><label>横位置 <input id="ix" type="range" min="0" max="100" step="1" value="50"> <output></output></label><label>縦位置 <input id="iy" type="range" min="0" max="100" step="1" value="50"> <output></output></label><label>画像の濃さ <input id="ia" type="range" min="5" max="100" step="5" value="100"> <output></output></label></div>
@@ -78,8 +79,8 @@ const G=[['ffff','ffff',['0.55'],[0.55],'#b23a6b'],
 ['A','A',['7','7 1/2'],[7,7.5],'#e0504a',1]];
 const rows=[];
 G.forEach(([k,h,t,v,c,m])=>t.forEach((tx,i)=>rows.push({key:k+(i?i:''),hw:h+['','′','″','‴'][i],mmT:tx,mm:v[i],hex:darken(c,TINT[i]),mk:m&&i===0})));
-[['U','U','8',8,'#d9c8ee',1],['Ul','Ul','9',9,'#b896dc',0],['UL','UL','10',10,'#9a6fc2',1],['Uw','Uw','11',11,'#ecd96a',0],['UW','UW','12',12,'#f6efb4',1],
-['Ux','Ux','13.5',13.5,'#f8bfd6',0],['UX','UX','15',15,'#ee8fb4',0],['Uy','Uy','16.5',16.5,'#c4c4c4',0],['UY','UY','18',18,'#9a9a9a',0],['Uz','Uz','21',21,'#666666',0],['UZ','UZ','25',25,'#2e2e2e',0]]
+[['U','U','8',8,'#d9c8ee',1],['Ul','Ul','9',9,'#b896dc',0],['UL','UL','10',10,'#9a6fc2',1],['Uw','Uw','11',11,'#f6efb4',0],['UW','UW','12',12,'#ecd96a',1],
+['Ux','Ux','13.5',13.5,'#f8bfd6',0],['UX','UX','15',15,'#ee8fb4',0],['Uy','Uy','16.5',16.5,'#c5c0f0',0],['UY','UY','18',18,'#9c94e0',0],['Uz','Uz','21',21,'#7468cc',0],['UZ','UZ','25',25,'#5144a8',0],['Uzz','Uzz','30',30,'#f7f7f7',0],['UZz','UZz','35',35,'#d4d4d4',0],['UZZ','UZZ','40',40,'#a6a6a6',0]]
 .forEach(([k,h,t,v,c,m])=>rows.push({key:k,hw:h,mmT:t,mm:v,hex:c,mk:!!m}));
 
 function render(r,p,c,s){if($('kind').value==='i')return renderInner(r,p,c,s);
@@ -109,10 +110,14 @@ function render(r,p,c,s){if($('kind').value==='i')return renderInner(r,p,c,s);
   x.fillStyle=mix(r.hex,'#000000',0.5);x.fillRect(0,0,9*s,H);
   if($('stkf').checked)drawStickers(x,W,H,s);
 }
-function symS(x,fs,px,py,align,bold){const sub=num('gw',5).toFixed(2),b=bold?'bold ':'';
+function sig2(v){if(!v)return '0';const d=Math.floor(Math.log10(Math.abs(v))),f=Math.pow(10,d-1),r=Math.round(v/f)*f;return r.toFixed(Math.max(0,1-d))}
+function symS(x,fs,px,py,align,bold){const sub=sig2(num('gw',5)),b=bold?'bold ':'';
   x.font=`${b}${fs}px ${F}`;const w1=x.measureText('S').width;x.font=`${b}${fs*0.6}px ${F}`;const t=w1+x.measureText(sub).width,sx=align==='right'?px-t:px;
   x.textAlign='left';x.font=`${b}${fs}px ${F}`;x.fillText('S',sx,py);x.font=`${b}${fs*0.6}px ${F}`;x.fillText(sub,sx+w1,py+fs*0.25);x.font=`${b}${fs}px ${F}`}
-const pp=()=>{let p=PAPERS[$('paper').value];if(p[0]==='カスタム')p=[p[0],Math.max(30,num('pw',200)),Math.max(30,num('ph',280))];return $('ori').value==='l'?[p[0],p[2],p[1]]:p};
+const PUF={mm:1,cm:10,in:25.4};let puPrev='mm';
+const pf=()=>PUF[$('punit').value];
+function paperLabels(){const f=pf(),u=$('punit').value;[...$('paper').options].forEach((o,i)=>{const p=PAPERS[i];if(p[0]==='カスタム'){o.textContent='カスタム';return}const nm=p[0].replace(/ \(.*$/,''),fm=v=>u==='mm'?String(v):(v/f).toFixed(2);o.textContent=`${nm} (${fm(p[1])}×${fm(p[2])}${u})`})}
+const pp=()=>{let p=PAPERS[$('paper').value];if(p[0]==='カスタム')p=[p[0],Math.max(30,num('pw',200)*pf()),Math.max(30,num('ph',280)*pf())];return $('ori').value==='l'?[p[0],p[2],p[1]]:p};
 let stickers=[],sel=0,drag=null;
 const sv=(id,d)=>{const e=document.getElementById(id+'n')||document.getElementById(id),r=document.getElementById(id);let v=parseFloat(e.value);if(!isFinite(v))return d;return Math.min(+r.max,Math.max(+r.min,v))};
 function setS(id,v){$(id).value=v;const n=$(id+'n');if(n)n.value=(+v).toFixed(2)}
@@ -137,7 +142,8 @@ function drawPattern(x,W,H,s,col,cov){
   else{let th=0;for(let i=0;i<30000;i++){const r=sp*th/(2*Math.PI)+sp/2;if(r>R+sp)break;put(cx+Math.cos(th)*r,cy+Math.sin(th)*r,th+Math.PI/2);th+=sp/Math.max(r,sp*0.5)}}
   x.restore()}
 const UNITS={mm:['mm',1],cm:['cm',10],in:['in',25.4],mil:['mil',0.0254],pt:['pt',25.4/72],pc:['pica',25.4/6],px:['px',25.4/96],Q:['Q',0.25],bu:['分',10/3.3],sun:['寸',100/3.3]};
-const szu=v=>{const u=UNITS[$('unit').value];return (v/u[1]).toFixed(2)+u[0]};
+const sigU=v=>{if(!v)return'0';const n=Math.abs(v)>=10?3:2,d=Math.floor(Math.log10(Math.abs(v))),f=Math.pow(10,d-n+1);return (Math.round(v/f)*f).toFixed(Math.max(0,n-1-d))};
+const szu=v=>{const k=$('unit').value,u=UNITS[k];return (k==='mm'?v.toFixed(2):sigU(v/u[1]))+' '+u[0]};
 const szt=v=>$('smm').checked?szu(v):'';
 const hh=()=>Math.max(7,num('fs2',9)*25.4/72*2);
 const num=(id,d)=>{const e=document.getElementById(id+'n')||document.getElementById(id),r=document.getElementById(id);let v=parseFloat(e.value);if(isFinite(v)&&r&&r.type==='range')v=Math.min(+r.max,Math.max(+r.min,v));return isFinite(v)&&v>=0?v:d};
@@ -189,7 +195,7 @@ function pdf(jpgs,wmm,hmm){
 }
 const $=id=>document.getElementById(id),cv=$('cv'),msg=$('msg');
 let cur=rows.find(r=>r.key==='UW');
-PAPERS.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p[0];$('paper').append(o)});$('paper').value=5;
+PAPERS.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p[0];$('paper').append(o)});$('paper').value=5;paperLabels();
 ['ffff','fff','ff','f','f1','f2','f3'].forEach((k,i)=>{rows.find(r=>r.key===k).hex=mix(mix('#2aa7a0','#ffffff',0.75),mix('#2aa7a0','#000000',0.5),i/6)});
 rows.push({key:'custom',hw:'X',mmT:'9',mm:9,hex:'#888888',mk:false,custom:true});
 rows.forEach(r=>{const b=document.createElement('button');b.style.background=r.hex;b.style.color=lum(r.hex)<0.5?'#fff':'#222';
@@ -203,7 +209,7 @@ function calc(){const p=pp(),H=p[2],mt=num('mtop',14),mb=num('mbot',12);
 function syncCustom(){const w=parseFloat($('cw').value),c=rows[rows.length-1];c.mm=isFinite(w)&&w>0?w:9;c.mmT=String(+c.mm.toFixed(2));c.hex=$('cc').value;c.hw=$('cs').value||'X';c.btn.style.background=c.hex;c.btn.style.color=lum(c.hex)<0.5?'#fff':'#222'}
 function draw(){rows.forEach(r=>{const m=r.btn&&r.btn.querySelector('small');if(m)m.textContent=szt(r.mm)});$('ptl').style.display=$('pm').value==='s'?'none':'';if($('pm').value==='s'&&stickers[sel]){const t=stickers[sel];t.x=sv('sx',t.x);t.y=sv('sy',t.y);t.size=sv('ss',t.size);t.rot=sv('sr',t.rot);t.alpha=sv('sa',t.alpha)}
   $('srow').style.display=$('pm').value==='s'?'':'none';cv.style.touchAction=$('pm').value==='s'?'none':'';[$('pt'),$('par')].forEach(e=>e.parentElement.style.display=$('pm').value==='t'?'':'none');$('pi').parentElement.style.display=$('pm').value==='i'?'':'none';$('prow').style.display=$('pm').value==='t'?'':'none';$('irow').style.display=$('pm').value==='i'?'':'none';syncCustom();$('cust').style.display=cur.custom?'':'none';$('cpaper').style.display=PAPERS[$('paper').value][0]==='カスタム'?'':'none';$('grid').classList.toggle('gm',$('dir').value==='g');rows.forEach(r=>r.btn.classList.toggle('on',r===cur));const inn=$('kind').value==='i';$('inner').style.display=inn?'':'none';$('cover').style.display=inn?'none':'';document.querySelectorAll('.mi').forEach(e=>e.style.display=inn?'':'none');render(cur,pp(),cv,5);if(inn)calc()}
-$('paper').onchange=()=>{autoMargin();draw()};$('ori').onchange=draw;$('kind').onchange=draw;['smm','unit','imgf','stkf','lbl','pm','par','pt','ps','pg','pa','pn','edge','fs1','fs2','mleft','mright','pw','ph','cc','cw','cs','cl1','cl2','tc','tr','mtop','mbot','nr','lw','dg','lstyle','dir','gw'].forEach(i=>$(i).oninput=draw);
+$('paper').onchange=()=>{autoMargin();draw()};$('ori').onchange=draw;$('punit').onchange=()=>{const nf=pf();['pw','ph'].forEach(id=>{const e=$(id),v=parseFloat(e.value);if(isFinite(v))e.value=(v*PUF[puPrev]/nf).toFixed(2)});puPrev=$('punit').value;document.querySelectorAll('.pu').forEach(e=>e.textContent=puPrev);paperLabels();draw()};$('kind').onchange=draw;['smm','unit','imgf','stkf','lbl','pm','par','pt','ps','pg','pa','pn','edge','fs1','fs2','mleft','mright','pw','ph','cc','cw','cs','cl1','cl2','tc','tr','mtop','mbot','nr','lw','dg','lstyle','dir','gw'].forEach(i=>$(i).oninput=draw);
 $('pi').onchange=e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{patImg=im;$('pm').value='i';draw()};im.src=fr.result};fr.readAsDataURL(f)};
 
 cv.addEventListener('pointerdown',ev=>{if($('pm').value!=='s'||$('kind').value!=='c')return;const q=cvPos(ev);
