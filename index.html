@@ -41,7 +41,7 @@ canvas{display:block;margin:0 auto;max-width:100%;max-height:70vh;border:1px sol
 <div id="cust" class="row"><label>色 <input id="cc" type="color" value="#888888"></label><label>幅 <input id="cw" type="number" value="9.00" step="0.1" min="0.5" style="width:72px"> mm</label><label>記号 <input id="cs" size="4" value="X"></label></div>
 <div id="cover" class="row"><label><input id="lbl" type="checkbox" checked> ラベルを表示</label><label>縁の幅（0で縁なし） <input id="edge" type="number" value="5.00" min="0" step="0.5" style="width:64px"> mm</label><label>記号の文字サイズ <input id="fs1" type="range" min="20" max="170" step="3" value="56"> <output id="fs1o"></output></label><label>1行目のラベル <input id="cl1" size="10" placeholder="（空欄）"></label><label>2行目のラベル <input id="cl2" size="10" value="名前"></label></div>
 <div id="inner"><div class="row"><label>文字サイズ <input id="fs2" type="range" min="6" max="30" step="3" value="9"> <output id="fs2o"></output></label></div>
-<div class="row"><label>倍率（B7 = 1.00。余白は B7 の値 × 倍率、縁は A4 で 5mm） <input id="zk" type="number" step="0.01" value="1.00" style="width:72px"></label><label>行数 <input id="nr" type="number" min="1" placeholder="自動" style="width:72px"></label></div>
+<div class="row"><label>倍率（余白 上5・下5・左右10mm × 倍率） <input id="zk" type="number" step="0.01" value="1.00" style="width:72px"></label><label>行数 <input id="nr" type="number" min="1" placeholder="自動" style="width:72px"></label></div>
 <p id="calc"></p>
 <details><summary>全サイズの行数表</summary><div id="tbl"></div></details></div>
 <div id="stage">
@@ -200,9 +200,9 @@ PAPERS.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.text
 rows.push({key:'custom',hw:'X',mmT:'9',mm:9,hex:'#888888',mk:false,custom:true});
 rows.forEach(r=>{const b=document.createElement('button');b.style.background=r.hex;b.style.color=lum(r.hex)<0.5?'#fff':'#222';
   b.innerHTML=r.custom?'カスタム':`${r.hw}<small></small>`;b.onclick=()=>{cur=r;autoMargin();draw()};r.btn=b;$('grid').append(b)});
-const MB=[8,6,3,3],MID=['mtop','mbot','mleft','mright'];
-function setByK(k){MID.forEach((id,i)=>$(id).value=(MB[i]*k).toFixed(2));$('edge').value=(5*k*91/210).toFixed(2)}
-function autoMargin(){const p=pp(),k=Math.min(p[1],p[2])/91;$('zk').value=k.toFixed(2);setByK(k);$('nr').value=''}
+const MB=[5,5,10,10],MID=['mtop','mbot','mleft','mright'];
+function setByK(k){MID.forEach((id,i)=>$(id).value=(MB[i]*k).toFixed(2))}
+function autoMargin(){setByK(parseFloat($('zk').value)||1);$('nr').value=''}
 function calc(){const p=pp(),H=p[2],mt=num('mtop',14),mb=num('mbot',12);
   if($('dir').value!=='h'){const gp=$('dir').value==='g'&&!cur.custom?num('gw',5):cur.mm,nc=Math.floor((p[1]-num('mleft',10)-num('mright',10))/gp+1e-6),nrr=Math.floor((H-mt-mb-hh())/gp+1e-6);$('calc').textContent=$('dir').value==='v'?`${cur.hw}\uff08${szu(cur.mm)}\uff09: ${nc}\u5217\uff08\u7dda${nc+1}\u672c\uff09`:`\u65b9\u773c ${gp.toFixed(2)}mm: \u6a2a${nc}\u30de\u30b9\u00d7\u7e26${nrr}\u30de\u30b9`;$('tbl').innerHTML='';return}
   const f=(m,q)=>{const n=q>0?q:Math.floor((H-mt-mb-hh())/m+1e-6),sl=(H-mt-mb)-n*m-hh();return[n,+(mt+sl/2).toFixed(2),+(mb+sl/2).toFixed(2)]};
